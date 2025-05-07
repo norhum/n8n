@@ -1,0 +1,1293 @@
+{
+  "name": "Automated Data Collection Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3d43c306-d4bd-410e-b0d1-fea9c653ab7a",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://www.reddit.com/r/technology/top.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "5"
+            },
+            {
+              "name": "t",
+              "value": "day"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-reddit-fetch"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        -120
+      ],
+      "id": "50e5a8b8-ddd7-4abf-a2c6-0cfc45f81ae0",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the subreddit name (assuming it's available in the response)\nconst subreddit = items[0].json.data.children[0].data.subreddit;\n\n// Create the posts array, with each post's title, url, and score\nconst posts = items[0].json.data.children.map(post => ({\n  title: post.data.title,\n  url: post.data.url,\n  score: post.data.score\n}));\n\n// Return the posts as separate items, including subreddit info\nreturn posts.map(post => ({\n  json: {\n    subreddit, // Include the subreddit name for each row\n    title: post.title,\n    url: post.url,\n    score: post.score\n  }\n}));\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -120
+      ],
+      "id": "7812f3c7-f448-41df-835d-fa5c7c02df26",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1vEoORlx_kN-5SHV8NnKSfdDy4j78ctDA-C0xfxNRoL4",
+          "mode": "list",
+          "cachedResultName": "reddit",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vEoORlx_kN-5SHV8NnKSfdDy4j78ctDA-C0xfxNRoL4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "시트1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vEoORlx_kN-5SHV8NnKSfdDy4j78ctDA-C0xfxNRoL4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "score": "={{ $json.score }}"
+          },
+          "matchingColumns": [
+            "title"
+          ],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        940,
+        -120
+      ],
+      "id": "04a467c3-05f4-466a-a599-299421f16428",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "42RK0LKoeMNMdhx9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "1257979@naver.com",
+        "subject": "=scraped!",
+        "emailType": "text",
+        "message": "=✅ Successfully added to Google Sheets!",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1580,
+        -260
+      ],
+      "id": "476297c4-93e8-45ab-8544-3ab09d4fdd7e",
+      "name": "Gmail",
+      "webhookId": "f98e10ed-705e-4a10-a2cd-c3ec42fcd476",
+      "executeOnce": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QAcuPurrodYW78r0",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        720,
+        -120
+      ],
+      "id": "2096ec03-47ac-457a-8a5a-40d8de6ba5f8",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        380
+      ],
+      "id": "bc06d5fa-b1b6-4670-b8eb-7e3719ce25c0",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the 'json' values from the items array into a list of story IDs\nconst storyIds = items.map(item => item.json);  // Assuming items is an array of objects where each has a 'json' property containing the story ID\n\n// Get the first 5 story IDs from the array\nconst limitedStoryIds = storyIds.slice(0, 5);\n\n// Map the story IDs to return individual story data by making HTTP requests\nconst stories = limitedStoryIds.map(storyId => {\n  return {\n    json: {\n      topStoryId: storyId  // Pass the storyId into the next request for fetching the story details\n    }\n  };\n});\n\n// Return the top 5 story IDs and their corresponding data for further processing (e.g., fetch story details in the next step)\nreturn stories;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        380
+      ],
+      "id": "869eaeca-af19-476e-8f12-dfa54a1b6a70",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "url": "=https://hacker-news.firebaseio.com/v0/item/{{ $json.topStoryId }}.json?print=pretty ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        380
+      ],
+      "id": "5b3c9fe1-923e-4e60-b9b9-61ae4d545f8c",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        880,
+        380
+      ],
+      "id": "9f6f321c-a998-4f23-93ac-4a333f0641eb",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1vEoORlx_kN-5SHV8NnKSfdDy4j78ctDA-C0xfxNRoL4",
+          "mode": "list",
+          "cachedResultName": "reddit",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vEoORlx_kN-5SHV8NnKSfdDy4j78ctDA-C0xfxNRoL4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "시트1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vEoORlx_kN-5SHV8NnKSfdDy4j78ctDA-C0xfxNRoL4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "score": "={{ $json.score }}"
+          },
+          "matchingColumns": [
+            "title"
+          ],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1160,
+        380
+      ],
+      "id": "5f25f1d0-e77b-481c-ba3e-bca79e2c12f6",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "42RK0LKoeMNMdhx9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1380,
+        -260
+      ],
+      "id": "c398fde2-9736-48e8-a4c3-d2b8fa73f721",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "content": "## Gmail with Merged Data  \n\nThis workflow sends personalized Gmail messages by merging dynamic data (e.g. name, email, order ID) into a message template. Data can come from Google Sheets, Airtable, webhooks, or other sources. Ideal for sending confirmations, updates, or marketing emails automatically.\n",
+        "height": 380,
+        "width": 500,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1340,
+        -440
+      ],
+      "typeVersion": 1,
+      "id": "8af95bb9-d73f-4ce8-9469-38e95d1f7200",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Reddit Top 5 Scraper to Google Sheets  \n\nThis workflow fetches the top 5 most upvoted posts from a specific Reddit subreddit using the Reddit API with HTTP Request node. It extracts key information like post title, score (upvotes), URL, and author, then writes the data into a Google Sheet.\n\nUseful for tracking trending posts, curating content, or analyzing Reddit discussions over time.\n",
+        "height": 380,
+        "width": 940,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        -300
+      ],
+      "typeVersion": 1,
+      "id": "9373607f-3530-4872-b699-8308f47b1cf4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Hacker News Top Stories to Google Sheets  \n\nThis workflow retrieves the top stories from Hacker News using the official Hacker News API. It collects details such as title, score, URL, and author, then writes the data into a Google Sheet.\n\nGreat for staying up-to-date with trending tech news, tracking story popularity, or building a daily content feed.\n",
+        "height": 400,
+        "width": 1180,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        180
+      ],
+      "typeVersion": 1,
+      "id": "d4710bbe-beb5-4d68-b55b-ea8428afada0",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {
+    "HTTP Request": [
+      {
+        "json": {
+          "kind": "Listing",
+          "data": {
+            "after": "t3_1kc891o",
+            "dist": 5,
+            "modhash": "",
+            "geo_filter": "",
+            "children": [
+              {
+                "kind": "t3",
+                "data": {
+                  "approved_at_utc": null,
+                  "subreddit": "technology",
+                  "selftext": "",
+                  "author_fullname": "t2_s81nffxuz",
+                  "saved": false,
+                  "mod_reason_title": null,
+                  "gilded": 0,
+                  "clicked": false,
+                  "title": "House votes to block California from banning sales of gas cars by 2035",
+                  "link_flair_richtext": [],
+                  "subreddit_name_prefixed": "r/technology",
+                  "hidden": false,
+                  "pwls": 6,
+                  "link_flair_css_class": "general",
+                  "downs": 0,
+                  "thumbnail_height": 90,
+                  "top_awarded_type": null,
+                  "hide_score": false,
+                  "name": "t3_1kcao8b",
+                  "quarantine": false,
+                  "link_flair_text_color": "dark",
+                  "upvote_ratio": 0.96,
+                  "author_flair_background_color": null,
+                  "ups": 12502,
+                  "total_awards_received": 0,
+                  "media_embed": {},
+                  "thumbnail_width": 140,
+                  "author_flair_template_id": null,
+                  "is_original_content": false,
+                  "user_reports": [],
+                  "secure_media": null,
+                  "is_reddit_media_domain": false,
+                  "is_meta": false,
+                  "category": null,
+                  "secure_media_embed": {},
+                  "link_flair_text": "Transportation",
+                  "can_mod_post": false,
+                  "score": 12502,
+                  "approved_by": null,
+                  "is_created_from_ads_ui": false,
+                  "author_premium": false,
+                  "thumbnail": "https://b.thumbs.redditmedia.com/dywdz50pjn31urHsfAPzx01yJGTWGRfSUOB9RGWbDqs.jpg",
+                  "edited": false,
+                  "author_flair_css_class": null,
+                  "author_flair_richtext": [],
+                  "gildings": {},
+                  "post_hint": "link",
+                  "content_categories": null,
+                  "is_self": false,
+                  "subreddit_type": "public",
+                  "created": 1746111189,
+                  "link_flair_type": "text",
+                  "wls": 6,
+                  "removed_by_category": null,
+                  "banned_by": null,
+                  "author_flair_type": "text",
+                  "domain": "washingtonpost.com",
+                  "allow_live_comments": false,
+                  "selftext_html": null,
+                  "likes": null,
+                  "suggested_sort": null,
+                  "banned_at_utc": null,
+                  "url_overridden_by_dest": "https://www.washingtonpost.com/climate-environment/2025/05/01/california-cars-waiver-house-vote/",
+                  "view_count": null,
+                  "archived": false,
+                  "no_follow": false,
+                  "is_crosspostable": false,
+                  "pinned": false,
+                  "over_18": false,
+                  "preview": {
+                    "images": [
+                      {
+                        "source": {
+                          "url": "https://external-preview.redd.it/BJ22zOMHhrD3NYmPqjB9Q2HP3mheSbo1WnEJJsc2xlM.jpg?auto=webp&amp;s=ad1fda69468a25be380d3b6b77323f549cb1826b",
+                          "width": 1440,
+                          "height": 927
+                        },
+                        "resolutions": [
+                          {
+                            "url": "https://external-preview.redd.it/BJ22zOMHhrD3NYmPqjB9Q2HP3mheSbo1WnEJJsc2xlM.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=4b8f335824a09abaafa26128504990053e0b1610",
+                            "width": 108,
+                            "height": 69
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/BJ22zOMHhrD3NYmPqjB9Q2HP3mheSbo1WnEJJsc2xlM.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=918359432a2e36838fad74c9f317856be73dd688",
+                            "width": 216,
+                            "height": 139
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/BJ22zOMHhrD3NYmPqjB9Q2HP3mheSbo1WnEJJsc2xlM.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=0bf3f625de857bc34c4fbad30979136eb8be1013",
+                            "width": 320,
+                            "height": 206
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/BJ22zOMHhrD3NYmPqjB9Q2HP3mheSbo1WnEJJsc2xlM.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=466eeae82b479b324586396dd8ab9810eb43d1ff",
+                            "width": 640,
+                            "height": 412
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/BJ22zOMHhrD3NYmPqjB9Q2HP3mheSbo1WnEJJsc2xlM.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=d957a8f185ee42b6d80810eecd59fc2cea5e6ae5",
+                            "width": 960,
+                            "height": 618
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/BJ22zOMHhrD3NYmPqjB9Q2HP3mheSbo1WnEJJsc2xlM.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=ea15cda051e69e1dcfeeffdcb7fbf63f6b45f3a0",
+                            "width": 1080,
+                            "height": 695
+                          }
+                        ],
+                        "variants": {},
+                        "id": "AtGc0rq_mwKRnolFQZOA9U_dvLNj5TNOFeTFXeldeO8"
+                      }
+                    ],
+                    "enabled": false
+                  },
+                  "all_awardings": [],
+                  "awarders": [],
+                  "media_only": false,
+                  "link_flair_template_id": "8bbeae4e-a816-11e9-bb93-0e20ab5bc1a0",
+                  "can_gild": false,
+                  "spoiler": false,
+                  "locked": false,
+                  "author_flair_text": null,
+                  "treatment_tags": [],
+                  "visited": false,
+                  "removed_by": null,
+                  "mod_note": null,
+                  "distinguished": null,
+                  "subreddit_id": "t5_2qh16",
+                  "author_is_blocked": false,
+                  "mod_reason_by": null,
+                  "num_reports": null,
+                  "removal_reason": null,
+                  "link_flair_background_color": "",
+                  "id": "1kcao8b",
+                  "is_robot_indexable": true,
+                  "report_reasons": null,
+                  "author": "DomesticErrorist22",
+                  "discussion_type": null,
+                  "num_comments": 1437,
+                  "send_replies": true,
+                  "contest_mode": false,
+                  "mod_reports": [],
+                  "author_patreon_flair": false,
+                  "author_flair_text_color": null,
+                  "permalink": "/r/technology/comments/1kcao8b/house_votes_to_block_california_from_banning/",
+                  "stickied": false,
+                  "url": "https://www.washingtonpost.com/climate-environment/2025/05/01/california-cars-waiver-house-vote/",
+                  "subreddit_subscribers": 19077847,
+                  "created_utc": 1746111189,
+                  "num_crossposts": 0,
+                  "media": null,
+                  "is_video": false
+                }
+              },
+              {
+                "kind": "t3",
+                "data": {
+                  "approved_at_utc": null,
+                  "subreddit": "technology",
+                  "selftext": "",
+                  "author_fullname": "t2_4y9tq",
+                  "saved": false,
+                  "mod_reason_title": null,
+                  "gilded": 0,
+                  "clicked": false,
+                  "title": "RFK Jr.'s HHS Orders Lab Studying Deadly Infectious Diseases to Stop Research",
+                  "link_flair_richtext": [],
+                  "subreddit_name_prefixed": "r/technology",
+                  "hidden": false,
+                  "pwls": 6,
+                  "link_flair_css_class": "general",
+                  "downs": 0,
+                  "thumbnail_height": 73,
+                  "top_awarded_type": null,
+                  "hide_score": false,
+                  "name": "t3_1kbwhhs",
+                  "quarantine": false,
+                  "link_flair_text_color": "dark",
+                  "upvote_ratio": 0.97,
+                  "author_flair_background_color": null,
+                  "ups": 8574,
+                  "total_awards_received": 0,
+                  "media_embed": {},
+                  "thumbnail_width": 140,
+                  "author_flair_template_id": null,
+                  "is_original_content": false,
+                  "user_reports": [],
+                  "secure_media": null,
+                  "is_reddit_media_domain": false,
+                  "is_meta": false,
+                  "category": null,
+                  "secure_media_embed": {},
+                  "link_flair_text": "Biotechnology",
+                  "can_mod_post": false,
+                  "score": 8574,
+                  "approved_by": null,
+                  "is_created_from_ads_ui": false,
+                  "author_premium": false,
+                  "thumbnail": "https://b.thumbs.redditmedia.com/6fG8Dxm21h56sNF6ZxnTo4LTJvgA1UO-YIY529Hy4xQ.jpg",
+                  "edited": false,
+                  "author_flair_css_class": null,
+                  "author_flair_richtext": [],
+                  "gildings": {},
+                  "post_hint": "link",
+                  "content_categories": null,
+                  "is_self": false,
+                  "subreddit_type": "public",
+                  "created": 1746061307,
+                  "link_flair_type": "text",
+                  "wls": 6,
+                  "removed_by_category": null,
+                  "banned_by": null,
+                  "author_flair_type": "text",
+                  "domain": "wired.com",
+                  "allow_live_comments": false,
+                  "selftext_html": null,
+                  "likes": null,
+                  "suggested_sort": null,
+                  "banned_at_utc": null,
+                  "url_overridden_by_dest": "https://www.wired.com/story/hhs-niaid-irf-ebola-disease-research-stop/",
+                  "view_count": null,
+                  "archived": false,
+                  "no_follow": false,
+                  "is_crosspostable": false,
+                  "pinned": false,
+                  "over_18": false,
+                  "preview": {
+                    "images": [
+                      {
+                        "source": {
+                          "url": "https://external-preview.redd.it/Z8dJNFluHeKacZfDwJNIBAFklJObiVy69N2PVigCR0Y.jpg?auto=webp&amp;s=bf83efed634417f33b202b47511ac775e28049ba",
+                          "width": 1280,
+                          "height": 670
+                        },
+                        "resolutions": [
+                          {
+                            "url": "https://external-preview.redd.it/Z8dJNFluHeKacZfDwJNIBAFklJObiVy69N2PVigCR0Y.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=1c63032cf4dae77cb8869e327aa7babeb4b498bb",
+                            "width": 108,
+                            "height": 56
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/Z8dJNFluHeKacZfDwJNIBAFklJObiVy69N2PVigCR0Y.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=dd5d5a23248b65dd768f7e9b1d204224e1bc5779",
+                            "width": 216,
+                            "height": 113
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/Z8dJNFluHeKacZfDwJNIBAFklJObiVy69N2PVigCR0Y.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=f2e42f7d4623d7899226bff975febdf2918c6372",
+                            "width": 320,
+                            "height": 167
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/Z8dJNFluHeKacZfDwJNIBAFklJObiVy69N2PVigCR0Y.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=e212bdf3498242452ddc4373b0614ecd227cf0ec",
+                            "width": 640,
+                            "height": 335
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/Z8dJNFluHeKacZfDwJNIBAFklJObiVy69N2PVigCR0Y.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=25893fe3caa5a4091b9de1ae85fd11ae66197654",
+                            "width": 960,
+                            "height": 502
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/Z8dJNFluHeKacZfDwJNIBAFklJObiVy69N2PVigCR0Y.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=f1bc6ddb884643f97b70bc360440b89b874eb87c",
+                            "width": 1080,
+                            "height": 565
+                          }
+                        ],
+                        "variants": {},
+                        "id": "a3JaisfoIMmqFRwzqj6w7fCsVYdeN0O6DSNxrQzhSS0"
+                      }
+                    ],
+                    "enabled": false
+                  },
+                  "all_awardings": [],
+                  "awarders": [],
+                  "media_only": false,
+                  "link_flair_template_id": "4586512a-a816-11e9-8a48-0ec3aebe875c",
+                  "can_gild": false,
+                  "spoiler": false,
+                  "locked": false,
+                  "author_flair_text": null,
+                  "treatment_tags": [],
+                  "visited": false,
+                  "removed_by": null,
+                  "mod_note": null,
+                  "distinguished": null,
+                  "subreddit_id": "t5_2qh16",
+                  "author_is_blocked": false,
+                  "mod_reason_by": null,
+                  "num_reports": null,
+                  "removal_reason": null,
+                  "link_flair_background_color": "",
+                  "id": "1kbwhhs",
+                  "is_robot_indexable": true,
+                  "report_reasons": null,
+                  "author": "Shogouki",
+                  "discussion_type": null,
+                  "num_comments": 487,
+                  "send_replies": false,
+                  "contest_mode": false,
+                  "mod_reports": [],
+                  "author_patreon_flair": false,
+                  "author_flair_text_color": null,
+                  "permalink": "/r/technology/comments/1kbwhhs/rfk_jrs_hhs_orders_lab_studying_deadly_infectious/",
+                  "stickied": false,
+                  "url": "https://www.wired.com/story/hhs-niaid-irf-ebola-disease-research-stop/",
+                  "subreddit_subscribers": 19077847,
+                  "created_utc": 1746061307,
+                  "num_crossposts": 0,
+                  "media": null,
+                  "is_video": false
+                }
+              },
+              {
+                "kind": "t3",
+                "data": {
+                  "approved_at_utc": null,
+                  "subreddit": "technology",
+                  "selftext": "",
+                  "author_fullname": "t2_2uwit82z",
+                  "saved": false,
+                  "mod_reason_title": null,
+                  "gilded": 0,
+                  "clicked": false,
+                  "title": "DOGE Recruits College Kid to Help Rewrite Housing Regulations with AI",
+                  "link_flair_richtext": [],
+                  "subreddit_name_prefixed": "r/technology",
+                  "hidden": false,
+                  "pwls": 6,
+                  "link_flair_css_class": "general",
+                  "downs": 0,
+                  "thumbnail_height": 93,
+                  "top_awarded_type": null,
+                  "hide_score": false,
+                  "name": "t3_1kc7sg1",
+                  "quarantine": false,
+                  "link_flair_text_color": "dark",
+                  "upvote_ratio": 0.96,
+                  "author_flair_background_color": null,
+                  "ups": 3125,
+                  "total_awards_received": 0,
+                  "media_embed": {},
+                  "thumbnail_width": 140,
+                  "author_flair_template_id": null,
+                  "is_original_content": false,
+                  "user_reports": [],
+                  "secure_media": null,
+                  "is_reddit_media_domain": false,
+                  "is_meta": false,
+                  "category": null,
+                  "secure_media_embed": {},
+                  "link_flair_text": "Software",
+                  "can_mod_post": false,
+                  "score": 3125,
+                  "approved_by": null,
+                  "is_created_from_ads_ui": false,
+                  "author_premium": true,
+                  "thumbnail": "https://b.thumbs.redditmedia.com/-1T6cyeZR7fDmvfOkyXh5QBbR9inFFoEzfc84KxRQ2Y.jpg",
+                  "edited": false,
+                  "author_flair_css_class": null,
+                  "author_flair_richtext": [],
+                  "gildings": {},
+                  "post_hint": "link",
+                  "content_categories": null,
+                  "is_self": false,
+                  "subreddit_type": "public",
+                  "created": 1746103408,
+                  "link_flair_type": "text",
+                  "wls": 6,
+                  "removed_by_category": null,
+                  "banned_by": null,
+                  "author_flair_type": "text",
+                  "domain": "gizmodo.com",
+                  "allow_live_comments": false,
+                  "selftext_html": null,
+                  "likes": null,
+                  "suggested_sort": null,
+                  "banned_at_utc": null,
+                  "url_overridden_by_dest": "https://gizmodo.com/doge-recruits-college-kid-to-help-rewrite-housing-regulations-with-ai-2000596710",
+                  "view_count": null,
+                  "archived": false,
+                  "no_follow": false,
+                  "is_crosspostable": false,
+                  "pinned": false,
+                  "over_18": false,
+                  "preview": {
+                    "images": [
+                      {
+                        "source": {
+                          "url": "https://external-preview.redd.it/aSSgYNq-_96BMBiicJc3Y6Po7_ew8mdit3nK3KzoTu0.jpg?auto=webp&amp;s=25e33c7ba3600e929d075d6d70bf4c2be5decb12",
+                          "width": 1500,
+                          "height": 1000
+                        },
+                        "resolutions": [
+                          {
+                            "url": "https://external-preview.redd.it/aSSgYNq-_96BMBiicJc3Y6Po7_ew8mdit3nK3KzoTu0.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=d093acaa93b3ae120c9d6bf3dabbe613b22314b2",
+                            "width": 108,
+                            "height": 72
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/aSSgYNq-_96BMBiicJc3Y6Po7_ew8mdit3nK3KzoTu0.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=dd6ddb2aa028b14951fea359ef962b880060a368",
+                            "width": 216,
+                            "height": 144
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/aSSgYNq-_96BMBiicJc3Y6Po7_ew8mdit3nK3KzoTu0.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=50024ec5eee79dc0c6bbee0a02898b88f1d50454",
+                            "width": 320,
+                            "height": 213
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/aSSgYNq-_96BMBiicJc3Y6Po7_ew8mdit3nK3KzoTu0.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=f408b202ae717976401c74873e369b387068eac8",
+                            "width": 640,
+                            "height": 426
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/aSSgYNq-_96BMBiicJc3Y6Po7_ew8mdit3nK3KzoTu0.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=9a0c7eb7e61e8840270706f0b053e2932d632449",
+                            "width": 960,
+                            "height": 640
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/aSSgYNq-_96BMBiicJc3Y6Po7_ew8mdit3nK3KzoTu0.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=26f1e738c6c8397815d359bb827680180c26f26e",
+                            "width": 1080,
+                            "height": 720
+                          }
+                        ],
+                        "variants": {},
+                        "id": "R6ZsQsgTOF2g6hy4bn64HxKvdQO4gGSbn1PzjHYdts8"
+                      }
+                    ],
+                    "enabled": false
+                  },
+                  "all_awardings": [],
+                  "awarders": [],
+                  "media_only": false,
+                  "link_flair_template_id": "85c4d73e-a816-11e9-95d5-0ee6b96491cc",
+                  "can_gild": false,
+                  "spoiler": false,
+                  "locked": false,
+                  "author_flair_text": null,
+                  "treatment_tags": [],
+                  "visited": false,
+                  "removed_by": null,
+                  "mod_note": null,
+                  "distinguished": null,
+                  "subreddit_id": "t5_2qh16",
+                  "author_is_blocked": false,
+                  "mod_reason_by": null,
+                  "num_reports": null,
+                  "removal_reason": null,
+                  "link_flair_background_color": "",
+                  "id": "1kc7sg1",
+                  "is_robot_indexable": true,
+                  "report_reasons": null,
+                  "author": "chrisdh79",
+                  "discussion_type": null,
+                  "num_comments": 139,
+                  "send_replies": false,
+                  "contest_mode": false,
+                  "mod_reports": [],
+                  "author_patreon_flair": false,
+                  "author_flair_text_color": null,
+                  "permalink": "/r/technology/comments/1kc7sg1/doge_recruits_college_kid_to_help_rewrite_housing/",
+                  "stickied": false,
+                  "url": "https://gizmodo.com/doge-recruits-college-kid-to-help-rewrite-housing-regulations-with-ai-2000596710",
+                  "subreddit_subscribers": 19077847,
+                  "created_utc": 1746103408,
+                  "num_crossposts": 1,
+                  "media": null,
+                  "is_video": false
+                }
+              },
+              {
+                "kind": "t3",
+                "data": {
+                  "approved_at_utc": null,
+                  "subreddit": "technology",
+                  "selftext": "",
+                  "author_fullname": "t2_4y9tq",
+                  "saved": false,
+                  "mod_reason_title": null,
+                  "gilded": 0,
+                  "clicked": false,
+                  "title": "Tesla's board opened a search for a CEO to succeed Elon Musk",
+                  "link_flair_richtext": [],
+                  "subreddit_name_prefixed": "r/technology",
+                  "hidden": false,
+                  "pwls": 6,
+                  "link_flair_css_class": "general",
+                  "downs": 0,
+                  "thumbnail_height": null,
+                  "top_awarded_type": null,
+                  "hide_score": false,
+                  "name": "t3_1kby7bn",
+                  "quarantine": false,
+                  "link_flair_text_color": "dark",
+                  "upvote_ratio": 0.96,
+                  "author_flair_background_color": null,
+                  "subreddit_type": "public",
+                  "ups": 1806,
+                  "total_awards_received": 0,
+                  "media_embed": {},
+                  "thumbnail_width": null,
+                  "author_flair_template_id": null,
+                  "is_original_content": false,
+                  "user_reports": [],
+                  "secure_media": null,
+                  "is_reddit_media_domain": false,
+                  "is_meta": false,
+                  "category": null,
+                  "secure_media_embed": {},
+                  "link_flair_text": "Business",
+                  "can_mod_post": false,
+                  "score": 1806,
+                  "approved_by": null,
+                  "is_created_from_ads_ui": false,
+                  "author_premium": false,
+                  "thumbnail": "default",
+                  "edited": false,
+                  "author_flair_css_class": null,
+                  "author_flair_richtext": [],
+                  "gildings": {},
+                  "content_categories": null,
+                  "is_self": false,
+                  "mod_note": null,
+                  "created": 1746066650,
+                  "link_flair_type": "text",
+                  "wls": 6,
+                  "removed_by_category": null,
+                  "banned_by": null,
+                  "author_flair_type": "text",
+                  "domain": "wsj.com",
+                  "allow_live_comments": false,
+                  "selftext_html": null,
+                  "likes": null,
+                  "suggested_sort": null,
+                  "banned_at_utc": null,
+                  "url_overridden_by_dest": "https://www.wsj.com/business/autos/tesla-musk-ceo-search-board-0ce61af9",
+                  "view_count": null,
+                  "archived": false,
+                  "no_follow": false,
+                  "is_crosspostable": false,
+                  "pinned": false,
+                  "over_18": false,
+                  "all_awardings": [],
+                  "awarders": [],
+                  "media_only": false,
+                  "link_flair_template_id": "49cac61c-a816-11e9-be34-0ebbab5890a0",
+                  "can_gild": false,
+                  "spoiler": false,
+                  "locked": false,
+                  "author_flair_text": null,
+                  "treatment_tags": [],
+                  "visited": false,
+                  "removed_by": null,
+                  "num_reports": null,
+                  "distinguished": null,
+                  "subreddit_id": "t5_2qh16",
+                  "author_is_blocked": false,
+                  "mod_reason_by": null,
+                  "removal_reason": null,
+                  "link_flair_background_color": "",
+                  "id": "1kby7bn",
+                  "is_robot_indexable": true,
+                  "report_reasons": null,
+                  "author": "Shogouki",
+                  "discussion_type": null,
+                  "num_comments": 131,
+                  "send_replies": false,
+                  "contest_mode": false,
+                  "mod_reports": [],
+                  "author_patreon_flair": false,
+                  "author_flair_text_color": null,
+                  "permalink": "/r/technology/comments/1kby7bn/teslas_board_opened_a_search_for_a_ceo_to_succeed/",
+                  "stickied": false,
+                  "url": "https://www.wsj.com/business/autos/tesla-musk-ceo-search-board-0ce61af9",
+                  "subreddit_subscribers": 19077847,
+                  "created_utc": 1746066650,
+                  "num_crossposts": 0,
+                  "media": null,
+                  "is_video": false
+                }
+              },
+              {
+                "kind": "t3",
+                "data": {
+                  "approved_at_utc": null,
+                  "subreddit": "technology",
+                  "selftext": "",
+                  "author_fullname": "t2_c7n3w",
+                  "saved": false,
+                  "mod_reason_title": null,
+                  "gilded": 0,
+                  "clicked": false,
+                  "title": "Apple’s design for the 20th-anniversary iPhone is apparently so ‘extraordinarily complex’ it must be made in China, report says",
+                  "link_flair_richtext": [],
+                  "subreddit_name_prefixed": "r/technology",
+                  "hidden": false,
+                  "pwls": 6,
+                  "link_flair_css_class": "general",
+                  "downs": 0,
+                  "thumbnail_height": 93,
+                  "top_awarded_type": null,
+                  "hide_score": false,
+                  "name": "t3_1kc891o",
+                  "quarantine": false,
+                  "link_flair_text_color": "dark",
+                  "upvote_ratio": 0.95,
+                  "author_flair_background_color": null,
+                  "ups": 1774,
+                  "total_awards_received": 0,
+                  "media_embed": {},
+                  "thumbnail_width": 140,
+                  "author_flair_template_id": null,
+                  "is_original_content": false,
+                  "user_reports": [],
+                  "secure_media": null,
+                  "is_reddit_media_domain": false,
+                  "is_meta": false,
+                  "category": null,
+                  "secure_media_embed": {},
+                  "link_flair_text": "Hardware",
+                  "can_mod_post": false,
+                  "score": 1774,
+                  "approved_by": null,
+                  "is_created_from_ads_ui": false,
+                  "author_premium": false,
+                  "thumbnail": "https://b.thumbs.redditmedia.com/qYCIVi5hFwFL7xQDqHpSe4YD_Td2eigWXMGOHpnks4w.jpg",
+                  "edited": false,
+                  "author_flair_css_class": null,
+                  "author_flair_richtext": [],
+                  "gildings": {},
+                  "post_hint": "link",
+                  "content_categories": null,
+                  "is_self": false,
+                  "subreddit_type": "public",
+                  "created": 1746104745,
+                  "link_flair_type": "text",
+                  "wls": 6,
+                  "removed_by_category": null,
+                  "banned_by": null,
+                  "author_flair_type": "text",
+                  "domain": "tech.yahoo.com",
+                  "allow_live_comments": false,
+                  "selftext_html": null,
+                  "likes": null,
+                  "suggested_sort": null,
+                  "banned_at_utc": null,
+                  "url_overridden_by_dest": "https://tech.yahoo.com/phones/articles/apple-design-20th-anniversary-iphone-112700181.html",
+                  "view_count": null,
+                  "archived": false,
+                  "no_follow": false,
+                  "is_crosspostable": false,
+                  "pinned": false,
+                  "over_18": false,
+                  "preview": {
+                    "images": [
+                      {
+                        "source": {
+                          "url": "https://external-preview.redd.it/FdZJeS5v0Gg_0Jm2ILYqx2gDoSOl6_GldadDgiOLwYM.jpg?auto=webp&amp;s=b547b07d7fc397d08947d6dbe38171a66e0b3453",
+                          "width": 1200,
+                          "height": 800
+                        },
+                        "resolutions": [
+                          {
+                            "url": "https://external-preview.redd.it/FdZJeS5v0Gg_0Jm2ILYqx2gDoSOl6_GldadDgiOLwYM.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=7687ce23bd411b97fc80e4e9002c24b311922a0f",
+                            "width": 108,
+                            "height": 72
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/FdZJeS5v0Gg_0Jm2ILYqx2gDoSOl6_GldadDgiOLwYM.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=ada5f4f3f36f2afb9f1a65073c30a846caa7d7a7",
+                            "width": 216,
+                            "height": 144
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/FdZJeS5v0Gg_0Jm2ILYqx2gDoSOl6_GldadDgiOLwYM.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=e6e4c5275029f1aa380e5d2d856afcf7c12a1c29",
+                            "width": 320,
+                            "height": 213
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/FdZJeS5v0Gg_0Jm2ILYqx2gDoSOl6_GldadDgiOLwYM.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=3adbfd64944cc0d86d94bafbd481b6a750e36b41",
+                            "width": 640,
+                            "height": 426
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/FdZJeS5v0Gg_0Jm2ILYqx2gDoSOl6_GldadDgiOLwYM.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=bd09d44dfe004a6a7192e2882b8b05c3dd74aff5",
+                            "width": 960,
+                            "height": 640
+                          },
+                          {
+                            "url": "https://external-preview.redd.it/FdZJeS5v0Gg_0Jm2ILYqx2gDoSOl6_GldadDgiOLwYM.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=ef814f17b15e10ad37041b7e80874d5c5e5ddfd7",
+                            "width": 1080,
+                            "height": 720
+                          }
+                        ],
+                        "variants": {},
+                        "id": "SBhfUU6yWsvCILoEO0c0EJTXKXfSFalKQ0miVwbB2es"
+                      }
+                    ],
+                    "enabled": false
+                  },
+                  "all_awardings": [],
+                  "awarders": [],
+                  "media_only": false,
+                  "link_flair_template_id": "51f3078c-a816-11e9-914b-0e1d353d3716",
+                  "can_gild": false,
+                  "spoiler": false,
+                  "locked": false,
+                  "author_flair_text": null,
+                  "treatment_tags": [],
+                  "visited": false,
+                  "removed_by": null,
+                  "mod_note": null,
+                  "distinguished": null,
+                  "subreddit_id": "t5_2qh16",
+                  "author_is_blocked": false,
+                  "mod_reason_by": null,
+                  "num_reports": null,
+                  "removal_reason": null,
+                  "link_flair_background_color": "",
+                  "id": "1kc891o",
+                  "is_robot_indexable": true,
+                  "report_reasons": null,
+                  "author": "lurker_bee",
+                  "discussion_type": null,
+                  "num_comments": 296,
+                  "send_replies": true,
+                  "contest_mode": false,
+                  "mod_reports": [],
+                  "author_patreon_flair": false,
+                  "author_flair_text_color": null,
+                  "permalink": "/r/technology/comments/1kc891o/apples_design_for_the_20thanniversary_iphone_is/",
+                  "stickied": false,
+                  "url": "https://tech.yahoo.com/phones/articles/apple-design-20th-anniversary-iphone-112700181.html",
+                  "subreddit_subscribers": 19077847,
+                  "created_utc": 1746104745,
+                  "num_crossposts": 3,
+                  "media": null,
+                  "is_video": false
+                }
+              }
+            ],
+            "before": null
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        []
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "02d4223d-9c98-4443-856a-cf49d48426c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c3f55a4558b349dc08185a1632c1fbf3ef187b8dc8c39ffb68ddf38c38110e3"
+  },
+  "id": "Mavh6DDVruR5sOTh",
+  "tags": []
+}

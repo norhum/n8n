@@ -1,0 +1,623 @@
+{
+  "name": "Automated Data Analysis and Distribution",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://internal.users.n8n.cloud/webhook/level2-erp",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "unique_id",
+              "value": "debaac0c7da5abf94f3417f9e2efa937"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        -80
+      ],
+      "id": "3fc0cb2d-309a-4fe7-8257-f30da0bf1424",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lWUDBasRBfzJGZYv",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app4b0X18VKCMX7dD",
+          "mode": "list",
+          "cachedResultName": "Beginner Course",
+          "cachedResultUrl": "https://airtable.com/app4b0X18VKCMX7dD"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblp0dKXRHgqaOFkP",
+          "mode": "list",
+          "cachedResultName": "processingOrderse",
+          "cachedResultUrl": "https://airtable.com/app4b0X18VKCMX7dD/tblp0dKXRHgqaOFkP"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        200,
+        100
+      ],
+      "id": "0eb53487-4f35-41de-9ed1-2a2119b96721",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Uy1Gd2aRujtqkQno",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "customerID",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        380,
+        0
+      ],
+      "id": "955ec161-28a3-4d0e-8e77-98be7ada1c18",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "orderPrice",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        600,
+        0
+      ],
+      "id": "f6e51acd-b27a-481e-83c2-a97455567473",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1232bf9b-d5f6-4555-9903-6afce02cc2a8",
+              "leftValue": "={{ $json.region }}",
+              "rightValue": "Americas",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        820,
+        0
+      ],
+      "id": "3b50ec61-f152-4144-b16f-958957e832cf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {
+          "fileName": "={{ $json.orderID.toString() }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        -260
+      ],
+      "id": "97c626da-9558-43f3-acb3-f4e1aaf957d2",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "sendTo": "1257979@naver.com",
+        "subject": "hi",
+        "emailType": "text",
+        "message": ".",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1260,
+        -260
+      ],
+      "id": "278284b3-38ea-46f7-b952-2ea1555b6552",
+      "name": "Gmail",
+      "webhookId": "1d833d1a-d8eb-4cf3-acdc-6908a516f32e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QAcuPurrodYW78r0",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=I sent the file using email with the label ID {{ $json.labelIds }}. My ID: debaac0c7da5abf94f3417f9e2efa937 ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        -260
+      ],
+      "id": "b56febe3-5b04-4331-9d19-f5498d1659cf",
+      "name": "Discord",
+      "webhookId": "e73a913d-dce6-4109-9098-c9a2b8cfabe9",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "rVpcNg4wDbhqoJ7V",
+          "name": "Discord Webhook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        140
+      ],
+      "id": "af968760-0e03-4eae-8143-7ca1f41d1a74",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f3204af-45ec-401b-bdbe-3b9ae4e7f15d",
+              "name": "customerEmail",
+              "value": "={{ $json.customerEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "5fe4d74f-971d-47e0-8f7b-1ce64b327d04",
+              "name": "customerRegion",
+              "value": "={{ $json.region }}",
+              "type": "string"
+            },
+            {
+              "id": "2f141c9a-7165-40ac-8ba4-c0988a618a3a",
+              "name": "customerSince",
+              "value": "={{ $json.customerSince }}",
+              "type": "string"
+            },
+            {
+              "id": "7ddf2e56-2220-4e7f-a7db-c684a73262fb",
+              "name": "orderPrice",
+              "value": "={{ $json.orderPrice }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1260,
+        220
+      ],
+      "id": "b5a55406-bfb2-42ec-97f0-e57a89da3bfb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ DateTime.fromFormat($json.customerSince, \"d/M/yyyy\") }}",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        220
+      ],
+      "id": "b7bc2269-dc53-4350-b974-345e88626182",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "options": {
+          "fileName": "={{$runIndex > 0 ? 'file_low_orders':'file_high_orders'}}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1700,
+        220
+      ],
+      "id": "c5c12adb-0953-4b66-a730-f3283550acd3",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=I created the spreadsheet . My ID : debaac0c7da5abf94f3417f9e2efa937 ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        220
+      ],
+      "id": "1003abe0-d3c9-4f62-8a78-e1236d89ee51",
+      "name": "Discord1",
+      "webhookId": "acd97c6e-011a-45e5-bf16-62ec65f1ce83",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "rVpcNg4wDbhqoJ7V",
+          "name": "Discord Webhook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "error!"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        -240
+      ],
+      "id": "efb77e96-0c66-4e6f-bf2f-b50235252920",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "content": "## Merge Data Sources\n\nCombines the data received from the HTTP Request (Input 1) and the Airtable search query (Input 2). This step is crucial for bringing together information from two distinct sources into a single unified dataset. The merged data is then passed on for sorting and subsequent conditional processing.",
+        "height": 500,
+        "width": 1020,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -60,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "19b854be-8cab-426a-b961-da162e11b7a8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f71f7dd4-2e05-4bc0-bcf2-1debb2895d27",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "## False Branch Processing & CSV Report via Discord\n\nExecuted when the preceding 'If' condition evaluates to false.\n\nThis path iterates through the relevant data items (Loop Over Items), applies specific data transformations like editing fields and adding date/time information to each item.\n\nOnce the loop is complete, the processed data is aggregated and converted into a CSV file (Convert to File1), which is then sent or notified via Discord (Discord1). This serves as a structured report for the subset of data that didn't meet the 'true' condition.",
+        "height": 560,
+        "width": 1140,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        980,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "39348c83-9757-41a9-9ed8-8545c5de1927",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## True Branch Processing & JSON Output via Email & Discord\n\nExecuted when the preceding 'If' condition evaluates to true.\n\nThis path converts the processed data into a JSON file format (Convert to File - Convert to JSON).\n\nThe JSON data/report is then sent via email using Gmail (Gmail - send: message). A corresponding message or notification is also sent through Discord (Discord). This ensures stakeholders receive the data and an alert via two different channels.",
+        "height": 380,
+        "width": 700,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        980,
+        -480
+      ],
+      "typeVersion": 1,
+      "id": "aac897d6-cf71-4b45-9369-2ec2dda0bda3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1800,
+        -240
+      ],
+      "id": "a2de1021-5fc9-469e-89d8-329ed1ec76f2",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "content": "## Error Handling & Workflow Termination\n\n'Stop' and 'Error' nodes are included at the end of the workflow paths.\n\nThe 'Error' node is used to explicitly halt the workflow execution and mark the run as failed.",
+        "height": 380,
+        "width": 420,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1700,
+        -480
+      ],
+      "typeVersion": 1,
+      "id": "b6771529-6709-4738-8ebe-f457648f82b5",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Discord1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "4k6Yhk75SBMqLhpk"
+  },
+  "versionId": "35213e99-878f-4534-9e9e-7baa09af69ee",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c3f55a4558b349dc08185a1632c1fbf3ef187b8dc8c39ffb68ddf38c38110e3"
+  },
+  "id": "KTp9gxfgD1tkdBOa",
+  "tags": []
+}
