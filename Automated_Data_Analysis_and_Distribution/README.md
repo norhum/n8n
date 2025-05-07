@@ -7,7 +7,7 @@ This project demonstrates a **daily automated n8n workflow** that integrates dat
 
 This automation ensures real-time alerts for quick insights and detailed reports for in-depth analysis.
 
-![Automated Workflow](스케린샷%202025-05-03%20153619.png)
+![Automated Workflow](스크린샷%202025-05-03%20153619.png)
 
 ### Features
 - **API and Airtable Integration**: Automatically fetches and merges data from an HTTP API and Airtable.
