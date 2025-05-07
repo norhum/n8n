@@ -1,0 +1,876 @@
+{
+  "name": "Upwork Agent Overview",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        40
+      ],
+      "id": "99d25c3a-0c19-4aae-be26-3f2f9e599870",
+      "name": "When chat message received",
+      "webhookId": "0b93fbbb-2887-45af-8816-0a067f604dcd"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You're a helpful, intelligent Upwork assistant. Your task is to receive an Upwork job description and then use it to generate assets, like Mermaid diagrams, Google Docs, and Upwork application bodies. \n\nWhen you receive an Upwork job description, you *must* generate a Mermaid diagram, a Google Doc proposal, and an Upwork application using the tools you have. You must then replace the $$$ with the Google Doc proposal link."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1260,
+        40
+      ],
+      "id": "2b488306-2bb7-49a1-995a-95c322821d6a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-exp-03-25",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        280
+      ],
+      "id": "c86af02b-dceb-4a7a-9895-3db4a31e217e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FYgNpSv90pcMCNHt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1260,
+        280
+      ],
+      "id": "3a42664b-171b-4a42-9778-370c469d46f8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "name": "genereate_google_docs_proposal",
+        "description": "Call this tool to generate a google docs proposal. The input should be the job description from Upwork.",
+        "workflowId": {
+          "__rl": true,
+          "value": "HV7JfFaR8W5nQUzZ",
+          "mode": "list",
+          "cachedResultName": "Upwork Agent: Generate Google Doc Proposal"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "JobProposal": "={{ $fromAI('JobProposal', `Job proposal from Upwork\n`, 'string') }}"
+          },
+          "matchingColumns": [
+            "JobProposal"
+          ],
+          "schema": [
+            {
+              "id": "JobProposal",
+              "displayName": "JobProposal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        280
+      ],
+      "id": "2c5882b4-5014-437e-8378-d46bb3567811",
+      "name": "Google Doc Proposal"
+    },
+    {
+      "parameters": {
+        "name": "generate_upwork_application_copy",
+        "description": "Call this too to generate Upwork application copy. The input will be an Upwork job description, and the output will be the Upwork application copy string from the tool.",
+        "workflowId": {
+          "__rl": true,
+          "value": "85Hu9Wc2UurH3cb3",
+          "mode": "list",
+          "cachedResultName": "Upwork Agent: Generate Application Body"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UpworkJobListing": "={{ $fromAI('UpworkJobListing', `Job description from Upwork`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UpworkJobListing",
+              "displayName": "UpworkJobListing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1580,
+        280
+      ],
+      "id": "b3a1ba93-f8ae-41e5-ac89-cdc5c9b15b29",
+      "name": "Job Proposal Generation"
+    },
+    {
+      "parameters": {
+        "name": "generate_mermaid_code",
+        "description": "call this tool to generate mermaid code. The input should be the Upwork job description.",
+        "workflowId": {
+          "__rl": true,
+          "value": "dOI3B9PkMrUbWIZJ",
+          "mode": "list",
+          "cachedResultName": "Upwork Agent: Genereate Mermaid Workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "jobDescription": "={{ $fromAI('jobDescription', `Upwork job description`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "jobDescription",
+              "displayName": "jobDescription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1720,
+        280
+      ],
+      "id": "e8f3dc59-c3e4-487c-9dd5-5cb39410953d",
+      "name": "Generate Mermaid Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\"jobDescription\":\"{{ $json.UpworkJobListing }}\"}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful, intelligent Upwork application writer."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=I'm an automation specialist applying to jobs on freelance platforms.  Your task is to take as input an Upwork job description and return as output a customized proposal.  High-performing proposals are typically templated as follows:  ``` Hi, I do {thing} all the time. Am so confident I'm the right fit for you that I just created a workflow diagram + a demo of your {thing} in no-code: $$$  About me: I'm a {relevantJobDescription} that has done {coolRelevantThing}. Of note, {otherCoolTieIn}.  Happy to do this for you anytime—just respond to this proposal (else I don't get a chat window).   Thank you! ```  Output your results in JSON using this format:  {\"proposal\":\"Your proposal\"}  Rules: - $$$ is what we're using to replace links later on, so leave that untouched. - Write in a casual, spartan tone of voice. - Don't use emojis or flowery language. - If there's a name included somewhere in the description, add it after \"Hi\"  Some facts about me for the personalization: {{ $json.aboutMe }}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        2340,
+        60
+      ],
+      "id": "8ed1dfcf-72e2-4ccf-bb74-d6c71bd13959",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4d67eb0f-21d6-4e7e-ae2d-790965a86339",
+              "name": "aboutMe",
+              "value": "I'm an AI and automation freelancer that builds outreach systems, CRM systems, project management systems, no-code systems, and integrations.|Some notable things I've done:- End to end project management for a $1M/yr copywriting agency- Outbound acquisition system that grew a content company from $10K/mo to $92K/mo in 12 mo- Monday.com CRM and PM for a recruiting company doing >$1M/yr- Automated content generation system for an SEO agency doing >$10M/yr- ClickUp CRM build for a marketing company doing $1M/yr- I run a Make.com community that does $100,000/mo- I run a YouTube channel about automation with over 50,000 subscribers- Email outreach system for a $MM San Diego real estate brokerage that closed $150K revenue in the first three days- Email outreach systems for a $200K/mo ecommerce dog treat company",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2140,
+        60
+      ],
+      "id": "7e181e3b-c694-40d2-b1ff-d7465dd0320c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"proposal\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2460,
+        280
+      ],
+      "id": "72b64480-6218-41a6-92aa-76ee14453339",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "UpworkJobListing"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1960,
+        60
+      ],
+      "id": "e8b1e7c5-c965-499a-b19a-3c33f06ae04b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-exp-03-25",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2280,
+        300
+      ],
+      "id": "3eaedecb-a728-4a4f-bf2e-3e8ee448ec89",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FYgNpSv90pcMCNHt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1LDUHZMfh4ufRNA-AJ--vxS3RGZZqLY6ouHIYcp3leR0",
+          "mode": "list",
+          "cachedResultName": "Proposal",
+          "cachedResultUrl": "https://docs.google.com/document/d/1LDUHZMfh4ufRNA-AJ--vxS3RGZZqLY6ouHIYcp3leR0/edit?usp=drivesdk"
+        },
+        "name": "={{ $json.output.titleOfSystem }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2420,
+        620
+      ],
+      "id": "64feaae5-0b02-441d-8737-a3ab3a9b52f9",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "gPqLPA6i5RsNdYHo",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2580,
+        620
+      ],
+      "id": "65c7e4fc-e83b-4c4b-8fc7-4ee2b2cd7277",
+      "name": "Google Drive1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "gPqLPA6i5RsNdYHo",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('Google Drive').item.json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{titleOfSystem}}",
+              "replaceText": "={{ $('Basic LLM Chain1').item.json.output.titleOfSystem }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{briefExplanationOfSystem}}",
+              "replaceText": "={{ $('Basic LLM Chain1').item.json.output.briefExplanationOfSystem }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{specificPartOfTheirRequest}}",
+              "replaceText": "={{ $('Basic LLM Chain1').item.json.output.specificPartOfTheirRequest }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{stepByStepBulletPoints}}",
+              "replaceText": "={{ $('Basic LLM Chain1').item.json.output.stepByStepBulletPoints }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{aboutMeBulletPoints}}",
+              "replaceText": "={{ $('Basic LLM Chain1').item.json.output.aboutMeBulletPoints }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{leftToRightFlowWithArrows}}",
+              "replaceText": "={{ $('Basic LLM Chain1').item.json.output.leftToRightFlowWithArrows }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        820
+      ],
+      "id": "58aabc5e-a1b3-4d7f-b0de-3774965ec305",
+      "name": "Google Docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "g8DZEv9Yu2f1ugrV",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\"jobDescription\":\"{{ $json.JobProposal }}\"}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful, intelligent proposal writer."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=I'm an automation specialist applying to jobs on freelance platforms.  Your task is to take as input an Upwork job description and return as output JSON for a customized proposal (which I'll upload to Google Docs).  High-performing proposals are typically templated as follows:  ``` # {titleOfSystem}  ## {briefExplanationOfSystem}  Hi. As mentioned, I’m so confident I’m the right fit for this I went ahead and created a proposal for you, including a step-by-step of how I’d do it.  I’ve done the below many times and working with {specificPartOfTheirRequest} is actually one of my favorite things to do. Talk about serendipity!  Anyway, here’s how we'll build {paraphrasedSystem}: {stepByStepBulletPoints}  So basically, {leftToRightFlowWithArrows}.  A little about me: {aboutMeBulletPoints}  To be upfront: my goal is to work with you on a long-term retainer, since I find it aligns incentives and lets me help clients better. So I'd treat everything we do together as foundational, and help you build systems that drive revenue/maximize cost savings.   I am really confident I can blow this out of the park for you, so if this sounds like something you're into, just respond to my proposal on Upwork & we'll take it from there.   Thank you for your time! ```  Output your results in JSON using this format:  {   \"titleOfSystem\": \"\",   \"briefExplanationOfSystem\": \"\",   \"specificPartOfTheirRequest\": \"\",   \"stepByStepBulletPoints\": \"\",   \"leftToRightFlowWithArrows\": \"\",   \"aboutMeBulletPoints\": \"\", }  Rules: - Write in a casual, spartan tone of voice. - Don't use emojis or flowery language. - If there's a name included somewhere in the description, add it for personalization purposes. - Return \"stepByStepBulletPoints\" and \"aboutMeBulletPoints\" as strings, and delimit each bullet point with a \\n and make sure it includes a - - In \"aboutMeBulletPoints\", prefer to mention social proof that includes $ and numbers. - For \"leftToRightFlowWithArrows\", write a simplified left to right flow delimited by \"->\" strings. For instance, we receive a new email -> we add that to the CRM -> we send an email to the new lead. - Use first-person \"I\" language, like \"I'd streamline...\" for bullet points etc.   Some facts about me for the personalization: {{ $json.aboutMe }}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        2120,
+        620
+      ],
+      "id": "e1a847c6-b475-4236-bede-0cf7a139ef82",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-exp-03-25",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2100,
+        820
+      ],
+      "id": "f077dbbd-a99c-4dd1-806a-c694d6b76834",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FYgNpSv90pcMCNHt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"titleOfSystem\": {\n      \"type\": \"string\"\n    },\n    \"briefExplanationOfSystem\": {\n      \"type\": \"string\"\n    },\n    \"specificPartOfTheirRequest\": {\n      \"type\": \"string\"\n    },\n    \"stepByStepBulletPoints\": {\n      \"type\": \"string\"\n    },\n    \"leftToRightFlowWithArrows\": {\n      \"type\": \"string\"\n    },\n    \"aboutMeBulletPoints\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"titleOfSystem\",\n    \"briefExplanationOfSystem\",\n    \"specificPartOfTheirRequest\",\n    \"stepByStepBulletPoints\",\n    \"leftToRightFlowWithArrows\",\n    \"aboutMeBulletPoints\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2260,
+        820
+      ],
+      "id": "e4502a65-53bb-49a0-8bc8-70c5e9086d4e",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1a0c065-608a-41d9-b454-ac5887a1c69b",
+              "name": "aboutMe",
+              "value": "I'm an AI and automation freelancer that builds outreach systems, CRM systems, project management systems, no-code systems, and integrations.|Some notable things I've done:- End to end project management for a $1M/yr copywriting agency- Outbound acquisition system that grew a content company from $10K/mo to $92K/mo in 12 mo- Monday.com CRM and PM for a recruiting company doing >$1M/yr- Automated content generation system for an SEO agency doing >$10M/yr- ClickUp CRM build for a marketing company doing $1M/yr- I run a Make.com community that does $100,000/mo- I run a YouTube channel about automation with over 50,000 subscribers- Email outreach system for a $MM San Diego real estate brokerage that closed $150K revenue in the first three days- Email outreach systems for a $200K/mo ecommerce dog treat company",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1960,
+        620
+      ],
+      "id": "1379a6b0-76eb-4521-b073-bedec2f3b8f5",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.jobDescription }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful, intelligent Mermaid.js code writer."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "Your task is to take as input an Upwork job description and return as output a Mermaid diagram that I can visualize using a subsequent Mermaid.js tool.  Output your results in plaintext using Mermaid code formatting. Don't output anything but the Mermaid diagram code.  Here's an example of what your output should look like:  graph TD;     A-->B;     A-->C;     B-->D;     C-->D;  Rules: - You only output flowcharts. Nothing else. No sequence diagrams, no Gantt charts—only flowcharts. - Do not output any accessory formatting information, like ```mermaid. - Your first character should be g."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1220,
+        620
+      ],
+      "id": "761540d1-7be9-4524-8b4e-a97605e3eb41",
+      "name": "Basic LLM Chain2"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-exp-03-25",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        860
+      ],
+      "id": "93c7dbbe-036f-4842-ac72-d3c50396da22",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FYgNpSv90pcMCNHt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "29b2e8dc-63c2-4faa-91ec-0bff76317c88",
+              "name": "mermaidCode",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1580,
+        620
+      ],
+      "id": "11828e6e-c59c-45d4-9825-49276c882067",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        620
+      ],
+      "id": "bc508b78-dc99-474c-a4cd-74f294dada83",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "content": "## Workflow 1: Chat Message Processing and Response\nChat Message Processor\nThis workflow processes incoming chat messages, generates responses using an AI Agent (Tools Agent), and provides multiple outputs: a Google Gemini Chat response, storage in Simple Memory, a Google Doc Proposal, a Job Proposal, and generated Mermaid diagram code. It's triggered by incoming chat messages.",
+        "height": 560,
+        "width": 900,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        980,
+        -120
+      ],
+      "typeVersion": 1,
+      "id": "bfe6a40a-cc88-4a6e-b461-155ef39a2077",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Workflow 3: Job Application Body Generation\nJob Application Write\nThis workflow helps create the body of a job application. It takes input, such as job details and user qualifications, and utilizes an LLM chain (Google Gemini Chat) to generate a tailored job application body. The output is the generated text, which can then be reviewed, edited, and used in the job application process. This workflow can be triggered manually or as part of a larger application workflow.",
+        "height": 560,
+        "width": 840,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1900,
+        -120
+      ],
+      "typeVersion": 1,
+      "id": "f044923b-1ef0-449b-ab0b-6c286f923c15",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Workflow 2: Mermaid Diagram Code Generation\nMermaid Diagram Generator\nThis workflow is designed to generate Mermaid diagram code. It receives input, likely a description or specification, and uses an LLM chain (Google Gemini Chat) to produce the corresponding Mermaid code. The output is the generated code, ready to be used in a Mermaid diagram renderer. This can be triggered manually or by another workflow.",
+        "height": 620,
+        "width": 900,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        980,
+        460
+      ],
+      "typeVersion": 1,
+      "id": "db991835-c698-4fa3-8249-4b2705a8dc4a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Workflow 4: Automated Google Docs Workflow\nGoogle Docs Automation\nThis workflow automates document creation and distribution using Google services. It takes input, processes it using an LLM (Google Gemini Chat), copies the result to a specified Google Drive location, shares the file, and updates a target Google Doc with the processed content.",
+        "height": 620,
+        "width": 840,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1900,
+        460
+      ],
+      "typeVersion": 1,
+      "id": "67855e4d-0b29-436a-aee6-fb0aa7305dca",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Doc Proposal": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Proposal Generation": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Mermaid Code": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Google Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs": {
+      "main": [
+        []
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9daacab1-008a-4bfd-af57-00b9c6c5bd2a",
+  "meta": {
+    "instanceId": "1c3f55a4558b349dc08185a1632c1fbf3ef187b8dc8c39ffb68ddf38c38110e3"
+  },
+  "id": "IvzK00ufqVbbxLlf",
+  "tags": [
+    {
+      "createdAt": "2025-05-05T10:10:36.933Z",
+      "updatedAt": "2025-05-05T10:10:36.933Z",
+      "id": "FQv6vSp9MPG26Yza",
+      "name": "Upwork"
+    }
+  ]
+}
