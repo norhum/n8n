@@ -4,7 +4,7 @@ This project shows how I used **n8n** to automate key aspects of the job applica
 
 The workflows created are reusable and can be easily customized for different job applications and project proposals, making the process simpler and saving valuable time.
 
-![Job Application Workflow](스크린샷 2025-05-05 223319.png)
+![Job Application Workflow](스크린샷%202025-05-05%20223319.png)
 
 ### Features
 - **Automated Job Applications**: Automatically creates customized application bodies for job listings.
